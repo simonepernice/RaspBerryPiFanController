@@ -1,0 +1,12 @@
+[Unit]
+Description=fancontroller is an advanced fan controller for Rasberry Pih
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/fancontroller
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

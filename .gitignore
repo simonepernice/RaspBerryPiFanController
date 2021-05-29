@@ -1,32 +1,15 @@
-# Prerequisites
-*.d
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+# Created by https://www.gitignore.io/api/codeblocks
+# Edit at https://www.gitignore.io/?templates=codeblocks
 
-# Precompiled Headers
-*.gch
-*.pch
+### CodeBlocks ###
+# specific to CodeBlocks IDE
+*.layout
+*.depend
+# generated directories
+bin/
+obj/
 
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
+# End of https://www.gitignore.io/api/codeblocks
 
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
+# Personal configuration files
