@@ -28,9 +28,9 @@ FanController::FanController() :
     log(configurator.isLogEnabled()),
     previousTemp(tempReader.readTemperatureMC()),
     previousActivePWM(0),
-    previousCheclPeriod(configurator.getCheckPeriodMinS()),
-    pwmperiod(10000/configurator.getPWMFrequencyHz()),
-    pwmminperiod((pwmperiod*configurator.getDutyCycleMin())/100)
+    previousCheckPeriod(configurator.getCheckPeriodMinMS()),
+    pwmperiod(10000 / configurator.getPWMFrequencyHz()),
+    pwmminperiod(pwmperiod * configurator.getDutyCycleMin() / 100)
 {
     wiringPiSetup();
     softPwmCreate(configurator.getPinNumber(), 0, pwmperiod) ;
@@ -42,9 +42,9 @@ FanController::FanController(int pin, int freq) :
     log(configurator.isLogEnabled()),
     previousTemp(tempReader.readTemperatureMC()),
     previousActivePWM(0),
-    previousCheclPeriod(configurator.getCheckPeriodMinS()),
-    pwmperiod(10000/configurator.getPWMFrequencyHz()),
-    pwmminperiod((pwmperiod*configurator.getDutyCycleMin())/100)
+    previousCheckPeriod(configurator.getCheckPeriodMinMS()),
+    pwmperiod(10000 / configurator.getPWMFrequencyHz()),
+    pwmminperiod(pwmperiod * configurator.getDutyCycleMin() / 100)
 {
     wiringPiSetup();
     softPwmCreate(configurator.getPinNumber(), 0, pwmperiod) ;
@@ -52,24 +52,55 @@ FanController::FanController(int pin, int freq) :
 
 void FanController::setPWMfromTemp(int tMC)
 {
-    if (tMC < configurator.getTempMinMC())
+    int activepwm;
+    if (tMC <= configurator.getTempMinMC())
     {
-        softPwmWrite(configurator.getPinNumber(), 0);
+        activepwm = 0;
     }
-    else if (tMC > configurator.getTempMaxMC())
+    else if (tMC >= configurator.getTempMaxMC())
     {
-        softPwmWrite(configurator.getPinNumber(), pwmperiod);
+        activepwm = pwmperiod;
     }
     else
     {
-        int activeperiod = (tMC - configurator.getTempMinMC()) *  pwmperiod / (configurator.getTempMaxMC() - configurator.getTempMinMC());
-        if (activeperiod < pwmminperiod)
+        activepwm = (tMC - configurator.getTempMinMC()) *  pwmperiod / (configurator.getTempMaxMC() - configurator.getTempMinMC());
+        if (activepwm < pwmminperiod)
         {
-            activeperiod = pwmminperiod;
+            activepwm = pwmminperiod;
         }
-        softPwmWrite(configurator.getPinNumber(), activeperiod);
+
+        if (previousActivePWM == 0 && configurator.getMaxPowTurnOnTimeMS() > 0)
+        {
+            softPwmWrite(configurator.getPinNumber(), pwmperiod);
+            delay(configurator.getMaxPowTurnOnTimeMS());
+        }
     }
+
+    softPwmWrite(configurator.getPinNumber(), activepwm);
+    previousActivePWM = activepwm;
 }
+
+void FanController::delayForNextCheck(int tMC)
+{
+    if (tMC - previousTemp > configurator.getCheckMaxDeltaTempMC())
+    {
+        int checkperiod = configurator.getCheckMaxDeltaTempMC() * previousCheckPeriod / (tMC - previousTemp);
+        if (checkperiod < configurator.getCheckPeriodMinMS())
+        {
+            checkperiod = configurator.getCheckPeriodMinMS();
+        }
+        previousCheckPeriod = checkperiod;
+        previousTemp = tMC;
+    }
+    else
+    {
+        previousTemp = tMC;
+        previousCheckPeriod = configurator.getCheckPeriodMaxMS();
+    }
+
+    delay(previousCheckPeriod);
+}
+
 void FanController::setPWMfromDC(int dc)
 {
     if (dc < 0 || dc > 100) return;
@@ -80,8 +111,9 @@ void FanController::run()
 {
     while(true)
     {
-        tempReader.readTemperatureMC();
-        delay(configurator.getCheckMaxDeltaTempMC());
+        int t = tempReader.readTemperatureMC();
+        setPWMfromTemp(t);
+        delayForNextCheck(t);
     }
 }
 

@@ -37,10 +37,10 @@ class Configurator
         int getDutyCycleMin() const  { return dutyCycleMin; }
         int getDutyCycleMax() const { return dutyCycleMax; }
         int getPWMFrequencyHz() const { return PWMFrequencyHz; }
-        int getMaxPowTurnOnTimeS() const { return maxPowTurnOnTimeS; }
+        int getMaxPowTurnOnTimeMS() const { return maxPowTurnOnTimeMS; }
         int getPinNumber() const { return pinNumber; }
-        int getCheckPeriodMaxS() const { return checkPeriodMaxS; }
-        int getCheckPeriodMinS() const { return checkPeriodMinS; }
+        int getCheckPeriodMaxMS() const { return checkPeriodMaxMS; }
+        int getCheckPeriodMinMS() const { return checkPeriodMinMS; }
         int getCheckMaxDeltaTempMC() const { return checkMaxDeltaTempMC; }
         bool isLogEnabled() const { return logEnabled; }
         int getLogLever() const { return logLevel; }
@@ -60,9 +60,9 @@ class Configurator
         const int tempMaxMC;
         const int dutyCycleMin;
         const int dutyCycleMax;
-        const int maxPowTurnOnTimeS;
-        const int checkPeriodMaxS;
-        const int checkPeriodMinS;
+        const int maxPowTurnOnTimeMS;
+        const int checkPeriodMaxMS;
+        const int checkPeriodMinMS;
         const int checkMaxDeltaTempMC;
         const bool logEnabled;
         const int logLevel;

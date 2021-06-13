@@ -35,6 +35,7 @@ class FanController
         void run();
         void setPWMfromTemp(int);
         void setPWMfromDC(int);
+        void delayForNextCheck(int);
 
 
     private:
@@ -43,7 +44,7 @@ class FanController
         Logger log;
         int previousTemp;
         int previousActivePWM;
-        int previousCheclPeriod;
+        int previousCheckPeriod;
         const int pwmperiod;
         const int pwmminperiod;
 };
