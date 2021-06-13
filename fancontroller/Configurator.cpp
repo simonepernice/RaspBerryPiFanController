@@ -37,27 +37,34 @@ void Configurator::checkForExtraSettings(const std::set<std::string>& keywords) 
 
 }
 
-Configurator::Configurator() :
+Configurator::Configurator(int pn, int fr) :
     existsConfigFile(existsConfigFileTest()),
     config(),
     setting(existsConfigFile ? (config.readFile(CONFIGFILENAME.c_str()), config.getRoot()) : config.getRoot()),
-    tempThresholdMC(existsConfigFile ? (setting.exists("tempthresholdc") ? 1000 * (int) setting["tempthresholdc"] : 60000 ) : 60000),
-    tempHysteresisMC(existsConfigFile ? (setting.exists("temphysteresisc") ? 1000 * (int) setting["temphysteresisc"] : 10000 ) : 10000),
+    pinNumber(pn),
+    PWMFrequencyHz(fr),
+    tempMinMC(existsConfigFile ? (setting.exists("tempminc") ? 1000 * (int) setting["tempminc"] : 45000 ) : 45000),
+    tempMaxMC(existsConfigFile ? (setting.exists("tempmaxc") ? 1000 * (int) setting["tempmaxc"] : 60000 ) : 60000),
     dutyCycleMin(existsConfigFile ? (setting.exists("dutycycleminpr") ? (int) setting["dutycycleminpr"] : 20 ) : 20),
     dutyCycleMax(existsConfigFile ? (setting.exists("dutycyclemaxpr") ? (int) setting["dutycyclemaxpr"] : 100 ) : 100),
-    PWMFrequencyHz(existsConfigFile ? (setting.exists("pwmfrequencyhz") ? (int) setting["pwmfrequencyhz"] : 10 ) : 10),
     maxPowTurnOnTimeS(existsConfigFile ? (setting.exists("maxpowturnontimes") ? (int) setting["maxpowturnontimes"] : 5 ) : 5),
-    pinNumber(existsConfigFile ? (setting.exists("pinnumber") ? (int) setting["pinnumber"] : 14 ) : 14),
     checkPeriodMaxS(existsConfigFile ? (setting.exists("checkperiodmaxs") ? (int) setting["checkperiodmaxs"] : 60 ) : 60),
     checkPeriodMinS(existsConfigFile ? (setting.exists("checkperiodmins") ? (int) setting["checkperiodmins"] : 1 ) : 1),
     checkMaxDeltaTempMC(existsConfigFile ? (setting.exists("checkmaxdeltatempc") ? 1000 * (int) setting["checkmaxdeltatempc"] : 2000 ) : 2000),
-    logEnabled(existsConfigFile ? (setting.exists("logenabled") ? 1000 * (bool) setting["logenabled"] : false ) : false)
+    logEnabled(existsConfigFile ? (setting.exists("logenabled") ? (bool) setting["logenabled"] : false ) : false),
+    logLevel(existsConfigFile ? (setting.exists("loglevel") ? (int) setting["loglevel"] : 1 ) : 1)
 {
-    static const std::set<std::string> keywords{"tempthresholdc", "temphysteresisc", "dutycycleminpr", "dutycyclemaxpr", "pwmfrequencyhz", "maxpowturnontimes", "pinnumber", "checkperiodmaxs", "checkperiodmins", "checkmaxdeltatempc", "logenabled"};
+    settingsCheck();
+}
+
+void Configurator::settingsCheck() const
+{
+    static const std::set<std::string> keywords{"tempminc", "tempmaxc", "dutycycleminpr", "dutycyclemaxpr", "pwmfrequencyhz", "maxpowturnontimes", "pinnumber", "checkperiodmaxs", "checkperiodmins", "checkmaxdeltatempc", "logenabled", "loglevel"};
     checkForExtraSettings(keywords);
 
-    if (tempThresholdMC > 100000 || tempThresholdMC < 0) throw std::runtime_error("Temperature out of range: allowed from 0 to 100C");
-    if (tempHysteresisMC > 50000 || tempHysteresisMC < 0) throw std::runtime_error("Hysteresis out of range: allowed from 0 to 50C");
+    if (tempMinMC > 100000 || tempMinMC < 0) throw std::runtime_error("Temperature minumum is out of range: allowed from 0 to 100C");
+    if (tempMaxMC > 100000 || tempMaxMC < 0) throw std::runtime_error("Temperature maximum is out of range: allowed from 0 to 100C");
+    if (tempMinMC > tempMaxMC) throw std::runtime_error("Temperature minimum is higher than maximum");
     if (dutyCycleMin > 100 || dutyCycleMin < 0) throw std::runtime_error("Minumum duty cycle out of range: allowed from 0 to 100%");
     if (dutyCycleMax > 100 || dutyCycleMax < 0) throw std::runtime_error("Maximum duty cycle out of range: allowed from 0 to 100%");
     if (dutyCycleMax < dutyCycleMin) throw std::runtime_error("Maximum duty cycle lower than minimum");
@@ -68,6 +75,27 @@ Configurator::Configurator() :
     if (checkPeriodMinS > 3600 || checkPeriodMinS < 0) throw std::runtime_error("Minimum check period out of range: allowed from 0 to 3600s");
     if (checkPeriodMaxS < checkPeriodMinS) throw std::runtime_error("Maximum check period lower than minimum");
     if (checkMaxDeltaTempMC > 50000 || checkMaxDeltaTempMC < 0) throw std::runtime_error("Max delta temperature check out of range: allowed from 0 to 50C");
+    if (logLevel < 1 || logLevel > 5) throw std::runtime_error("The log detail level is out of range: allowed from 1 to 5");
+}
+
+Configurator::Configurator() :
+    existsConfigFile(existsConfigFileTest()),
+    config(),
+    setting(existsConfigFile ? (config.readFile(CONFIGFILENAME.c_str()), config.getRoot()) : config.getRoot()),
+    pinNumber(existsConfigFile ? (setting.exists("pinnumber") ? (int) setting["pinnumber"] : 14 ) : 14),
+    PWMFrequencyHz(existsConfigFile ? (setting.exists("pwmfrequencyhz") ? (int) setting["pwmfrequencyhz"] : 10 ) : 10),
+    tempMinMC(existsConfigFile ? (setting.exists("tempminc") ? 1000 * (int) setting["tempminc"] : 50000 ) : 50000),
+    tempMaxMC(existsConfigFile ? (setting.exists("tempmaxc") ? 1000 * (int) setting["tempmaxc"] : 10000 ) : 10000),
+    dutyCycleMin(existsConfigFile ? (setting.exists("dutycycleminpr") ? (int) setting["dutycycleminpr"] : 20 ) : 20),
+    dutyCycleMax(existsConfigFile ? (setting.exists("dutycyclemaxpr") ? (int) setting["dutycyclemaxpr"] : 100 ) : 100),
+    maxPowTurnOnTimeS(existsConfigFile ? (setting.exists("maxpowturnontimes") ? (int) setting["maxpowturnontimes"] : 5 ) : 5),
+    checkPeriodMaxS(existsConfigFile ? (setting.exists("checkperiodmaxs") ? (int) setting["checkperiodmaxs"] : 60 ) : 60),
+    checkPeriodMinS(existsConfigFile ? (setting.exists("checkperiodmins") ? (int) setting["checkperiodmins"] : 1 ) : 1),
+    checkMaxDeltaTempMC(existsConfigFile ? (setting.exists("checkmaxdeltatempc") ? 1000 * (int) setting["checkmaxdeltatempc"] : 2000 ) : 2000),
+    logEnabled(existsConfigFile ? (setting.exists("logenabled") ? (bool) setting["logenabled"] : false ) : false),
+    logLevel(existsConfigFile ? (setting.exists("loglevel") ? (int) setting["loglevel"] : 1 ) : 1)
+{
+    settingsCheck();
 }
 
 Configurator::~Configurator()

@@ -29,14 +29,17 @@ class Logger
         Logger(bool);
         virtual ~Logger();
         void append(const std::string&);
-        void clean();
 
     private:
         const bool enabled;
         std::ofstream log;
         const std::string LOGFILENAME = "/var/log/fancontroller.log";
+        const int MAXLOGFILELINES = 1000;
 
+        int logLines;
         void logTime();
+        int countLogFileLines();
+        bool makeNewLogFile();
 };
 
 #endif // LOGGER_H

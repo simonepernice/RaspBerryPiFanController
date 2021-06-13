@@ -29,10 +29,11 @@ class Configurator
 {
     public:
         Configurator();
+        Configurator(int, int);
         virtual ~Configurator();
 
-        int getTempThresholdMC() const { return tempThresholdMC; }
-        int getTempHysteresisMC() const { return tempHysteresisMC; }
+        int getTempMinMC() const { return tempMinMC; }
+        int getTempMaxMC() const { return tempMaxMC; }
         int getDutyCycleMin() const  { return dutyCycleMin; }
         int getDutyCycleMax() const { return dutyCycleMax; }
         int getPWMFrequencyHz() const { return PWMFrequencyHz; }
@@ -42,24 +43,31 @@ class Configurator
         int getCheckPeriodMinS() const { return checkPeriodMinS; }
         int getCheckMaxDeltaTempMC() const { return checkMaxDeltaTempMC; }
         bool isLogEnabled() const { return logEnabled; }
+        int getLogLever() const { return logLevel; }
 
     private:
         const std::string CONFIGFILENAME = "/etc/fancontroller.cfg";
+
         const bool existsConfigFile;
         libconfig::Config config;
         const libconfig::Setting& setting;
-        const int tempThresholdMC;
-        const int tempHysteresisMC;
+
+
+        const int pinNumber;
+        const int PWMFrequencyHz;
+
+        const int tempMinMC;
+        const int tempMaxMC;
         const int dutyCycleMin;
         const int dutyCycleMax;
-        const int PWMFrequencyHz;
         const int maxPowTurnOnTimeS;
-        const int pinNumber;
         const int checkPeriodMaxS;
         const int checkPeriodMinS;
         const int checkMaxDeltaTempMC;
         const bool logEnabled;
+        const int logLevel;
 
+        void settingsCheck() const;
         bool existsConfigFileTest() const;
         void checkForExtraSettings(const std::set<std::string>&) const;
 };

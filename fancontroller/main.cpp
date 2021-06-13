@@ -37,8 +37,8 @@ void tempTest ()
 void configTest ()
 {
     Configurator cr;
-    std::cout << "The threshold is " << cr.getTempThresholdMC() << "\n";
-    std::cout << "The hysteresis is " << cr.getTempHysteresisMC() << "\n";
+    std::cout << "The temperature minimum is " << cr.getTempMinMC() << "\n";
+    std::cout << "The temperature maximum is " << cr.getTempMaxMC() << "\n";
     std::cout << "The min duty cycle is " << cr.getDutyCycleMin() << "\n";
     std::cout << "The max duty cycle is " << cr.getDutyCycleMax() << "\n";
     std::cout << "The PWM frequency is " << cr.getPWMFrequencyHz() << "\n";

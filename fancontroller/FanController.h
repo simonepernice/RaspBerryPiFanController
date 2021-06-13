@@ -29,9 +29,12 @@ class FanController
 {
     public:
         FanController();
+        FanController(int, int);
         virtual ~FanController();
 
         void run();
+        void setPWMfromTemp(int);
+        void setPWMfromDC(int);
 
 
     private:
@@ -42,6 +45,7 @@ class FanController
         int previousActivePWM;
         int previousCheclPeriod;
         const int pwmperiod;
+        const int pwmminperiod;
 };
 
 #endif // FANCONTROLLER_H
