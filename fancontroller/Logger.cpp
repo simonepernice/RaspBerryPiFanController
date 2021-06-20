@@ -23,8 +23,9 @@
 #include <iostream>
 #include <stdio.h>
 
-Logger::Logger(bool en) :
+Logger::Logger(const bool en, const int lev) :
     enabled(en),
+    logLevel(lev),
     logLines(0)
 {
     if (enabled)
@@ -70,9 +71,9 @@ void Logger::logTime()
     log << " Fan Controller: ";
 }
 
-void Logger::append(const std::string& stringToLog)
+void Logger::append(const std::string& stringToLog, const int level)
 {
-    if (enabled)
+    if (enabled && level <= logLevel)
     {
         if (logLines > MAXLOGFILELINES )
         {
@@ -107,4 +108,5 @@ bool Logger::makeNewLogFile()
             return false;
         }
     }
+    return false;
 }

@@ -43,7 +43,7 @@ class Configurator
         int getCheckPeriodMinMS() const { return checkPeriodMinMS; }
         int getCheckMaxDeltaTempMC() const { return checkMaxDeltaTempMC; }
         bool isLogEnabled() const { return logEnabled; }
-        int getLogLever() const { return logLevel; }
+        int getLogLevel() const { return logLevel; }
 
     private:
         const std::string CONFIGFILENAME = "/etc/fancontroller.cfg";

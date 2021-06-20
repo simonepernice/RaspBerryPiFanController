@@ -25,7 +25,7 @@
 FanController::FanController() :
     configurator(),
     tempReader(),
-    log(configurator.isLogEnabled()),
+    log(configurator.isLogEnabled(), configurator.getLogLevel()),
     previousTemp(tempReader.readTemperatureMC()),
     previousActivePWM(0),
     previousCheckPeriod(configurator.getCheckPeriodMinMS()),
@@ -39,7 +39,7 @@ FanController::FanController() :
 FanController::FanController(int pin, int freq) :
     configurator(pin, freq),
     tempReader(),
-    log(configurator.isLogEnabled()),
+    log(configurator.isLogEnabled(), configurator.getLogLevel()),
     previousTemp(tempReader.readTemperatureMC()),
     previousActivePWM(0),
     previousCheckPeriod(configurator.getCheckPeriodMinMS()),
@@ -77,26 +77,43 @@ void FanController::setPWMfromTemp(int tMC)
     }
 
     softPwmWrite(configurator.getPinNumber(), activepwm);
-    previousActivePWM = activepwm;
+
+    if (previousActivePWM != activepwm)
+    {
+        log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Changed PWM to: "+std::to_string(activepwm*100/pwmminperiod)+"%", 0);
+        previousActivePWM = activepwm;
+    }
+    else
+    {
+        log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Changed PWM to: "+std::to_string(activepwm*100/pwmminperiod)+"%", 0);
+    }
 }
 
 void FanController::delayForNextCheck(int tMC)
 {
-    if (tMC - previousTemp > configurator.getCheckMaxDeltaTempMC())
+    const int deltaT = tMC - previousTemp;
+    if (deltaT != configurator.getCheckMaxDeltaTempMC())
     {
-        int checkperiod = configurator.getCheckMaxDeltaTempMC() * previousCheckPeriod / (tMC - previousTemp);
+        int checkperiod = configurator.getCheckMaxDeltaTempMC() * previousCheckPeriod / deltaT;
+
         if (checkperiod < configurator.getCheckPeriodMinMS())
         {
             checkperiod = configurator.getCheckPeriodMinMS();
         }
-        previousCheckPeriod = checkperiod;
-        previousTemp = tMC;
+        else if (checkperiod > configurator.getCheckPeriodMaxMS())
+        {
+            checkperiod = configurator.getCheckPeriodMaxMS();
+        }
+
+        if (previousCheckPeriod != checkperiod)
+        {
+            log.append("Updtate temperature check period to: "+std::to_string(checkperiod)+"ms", 1);
+            previousCheckPeriod = checkperiod;
+        }
+
     }
-    else
-    {
-        previousTemp = tMC;
-        previousCheckPeriod = configurator.getCheckPeriodMaxMS();
-    }
+
+    previousTemp = tMC;
 
     delay(previousCheckPeriod);
 }

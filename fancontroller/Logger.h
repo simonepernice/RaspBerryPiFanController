@@ -26,9 +26,9 @@
 class Logger
 {
     public:
-        Logger(bool);
+        Logger(const bool, const int);
         virtual ~Logger();
-        void append(const std::string&);
+        void append(const std::string&, const int);
 
     private:
         const bool enabled;
@@ -36,6 +36,7 @@ class Logger
         const std::string LOGFILENAME = "/var/log/fancontroller.log";
         const int MAXLOGFILELINES = 1000;
 
+        const int logLevel;
         int logLines;
         void logTime();
         int countLogFileLines();

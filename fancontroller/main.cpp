@@ -48,7 +48,7 @@ void configTest ()
     std::cout << "The min check period time is " << cr.getCheckPeriodMinMS() << "ms\n";
     std::cout << "The max delta-temperature per check is " << cr.getCheckMaxDeltaTempMC() << "mC\n";
     std::cout << "The log file is enabled " << cr.isLogEnabled() << "\n";
-    std::cout << "The log level is " << cr.getLogLever() << "\n";
+    std::cout << "The log level is " << cr.getLogLevel() << "\n";
 }
 
 int main()
