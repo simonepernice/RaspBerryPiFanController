@@ -71,8 +71,8 @@ void Configurator::settingsCheck() const
     if (PWMFrequencyHz < 0 || PWMFrequencyHz > 100) throw std::runtime_error("PwM frequency out of range: allowed from 0 to 100Hz");
     if (maxPowTurnOnTimeMS < 0 || maxPowTurnOnTimeMS > 10000) throw std::runtime_error("Max-power turn-on time out of range: allowed from 0 to 10000ms");
     if (pinNumber < 0 || pinNumber > 64) throw std::runtime_error("Pin number out of range: allowed from 0 to 64");
-    if (checkPeriodMaxMS > 3600 || checkPeriodMaxMS < 0) throw std::runtime_error("Maximum check period out of range: allowed from 0 to 3600s");
-    if (checkPeriodMinMS > 3600 || checkPeriodMinMS < 0) throw std::runtime_error("Minimum check period out of range: allowed from 0 to 3600s");
+    if (checkPeriodMaxMS > 3600000 || checkPeriodMaxMS < 0) throw std::runtime_error("Maximum check period out of range: allowed from 0 to 3600s");
+    if (checkPeriodMinMS > 3600000 || checkPeriodMinMS < 0) throw std::runtime_error("Minimum check period out of range: allowed from 0 to 3600s");
     if (checkPeriodMaxMS < checkPeriodMinMS) throw std::runtime_error("Maximum check period lower than minimum");
     if (checkMaxDeltaTempMC > 50000 || checkMaxDeltaTempMC < 0) throw std::runtime_error("Max delta temperature check out of range: allowed from 0 to 50C");
     if (logLevel < 1 || logLevel > 5) throw std::runtime_error("The log detail level is out of range: allowed from 1 to 5");

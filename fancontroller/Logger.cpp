@@ -67,8 +67,13 @@ int Logger::countLogFileLines()
 void Logger::logTime()
 {
     time_t now = time(0);
-    log << ctime(&now);
-    log << " Fan Controller: ";
+    tm *local_time = localtime(&now);
+    log << local_time->tm_mday << '/';
+    log << 1 + local_time->tm_mon<< '/';
+    log << 1900 + local_time->tm_year << "  ";
+    log << local_time->tm_hour << ':';
+    log << local_time->tm_min << ':';
+    log << local_time->tm_sec << " Fan Controller: ";
 }
 
 void Logger::append(const std::string& stringToLog, const int level)
@@ -83,7 +88,7 @@ void Logger::append(const std::string& stringToLog, const int level)
         logTime();
 
         log << stringToLog;
-        log << '\n';
+        log << std::endl;
 
         logLines ++;
     }

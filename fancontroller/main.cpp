@@ -22,6 +22,7 @@
 
 #include "TempReader.h"
 #include "Configurator.h"
+#include "FanController.h"
 
 
 void tempTest ()
@@ -51,9 +52,56 @@ void configTest ()
     std::cout << "The log level is " << cr.getLogLevel() << "\n";
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-    configTest();
+    if (argc > 1)
+    {
+        int pin = -1;
+        int freq = -1;
+        int dc = -1;
+        int tm = 10;
+        int c;
+        while ((c = getopt(argc, argv, "p:f:d:t:")) != -1)
+        {
+            switch (c)
+            {
+                case 'p':
+                    pin = atoi(optarg);
+                    break;
+                case 'f':
+                    freq = atoi(optarg);
+                    break;
+                case 'd':
+                    dc = atoi(optarg);
+                    break;
+                case 't':
+                    tm = atoi(optarg);
+                    break;
+                default:
+                    std::cout << "Do not provide any option to run in background or set -f frequency, -d dutycycle, -t how long last the test and -p pin to run a test\n";
+                    return 1;
+            }
+        }
+        if (pin < 0 || freq < 1 || freq > 100 || dc < 1 || dc > 100)
+        {
+            std::cout << "Missing or not valid pin, frequency or duty cycle\n";
+            return 1;
+        }
+        FanController fanc(pin, freq);
+        fanc.setPWMfromDC(dc);
+        std::cout << "Pin " << pin << " set at frequency " << freq << " and duty cycle " << dc << " for " << tm << " seconds" << std::endl;
+        sleep(tm);
+        std::cout << "Done.\nNow set to zero. " << std::endl;
+        fanc.setPWMfromDC(0);
+        sleep(1);
+        std::cout << "Bye bye.\n";
+        return 0;
+    }
+    else
+    {
+        FanController f;
+        f.run(); //forever
+    }
     return 0;
 }
 

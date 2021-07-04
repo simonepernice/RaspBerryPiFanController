@@ -1,21 +1,12 @@
 #!/bin/sh
 
-echo -e "#modified by homealarm to set the battery test gpio low at boot to avoid battery discharge and circuit damage\ngpio=14=op,dl\n(cat /boot/config.txt)" > /boot/config.txt
+cp fancontroller/bin/Release/fancontroller /usr/bin
 
-mkdir -p /etc/homealarm
-cp config/*.cfg /etc/homealarm
+cp config/fancontroller.cfg /etc/
 
-mkdir -p /var/log/homealarm
-
-cp bin/arm/homealarm /usr/bin/
-
-cp service/homealarm.* /etc/systemd/system
-chmod 644 /etc/systemd/system/homealarm.*
-
+cp config/fanconcroller.service /etc/systemd/system
+chmod 640 /etc/systemd/system/fancontroller.service
 systemctl daemon-reload 
-
-sudo systemctl enable homealarm.timer
-
-sudo systemctl start homealarm.service
-
+sudo systemctl enable fancontroller.service
+sudo systemctl start fancontroller.service
 

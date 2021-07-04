@@ -1,0 +1,15 @@
+[Unit]
+Description=Fan controller control external fan depending on processor temperature
+
+Wants=network.target
+After=syslog.target network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/fancontroller
+RestartSec=10
+Restart=on-failure
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target
