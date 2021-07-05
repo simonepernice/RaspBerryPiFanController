@@ -81,12 +81,12 @@ void FanController::setPWMfromTemp(int tMC)
 
     if (previousActivePWM != activepwm)
     {
-        log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Changed PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 0);
+        if (configurator.isLogEnabled()) log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Changed PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 0);
         previousActivePWM = activepwm;
     }
     else
     {
-        log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Changed PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 0);
+        if (configurator.isLogEnabled()) log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Keep   PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 2);
     }
 }
 
@@ -115,7 +115,7 @@ void FanController::delayForNextCheck(int tMC)
 
         if (previousCheckPeriod != checkperiod)
         {
-            log.append("Updtate temperature check period to: "+std::to_string(checkperiod/1000)+"s", 1);
+            if (configurator.isLogEnabled()) log.append("Updtate temperature check period to: "+std::to_string(checkperiod/1000)+"s", 1);
             previousCheckPeriod = checkperiod;
         }
     }

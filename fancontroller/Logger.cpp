@@ -22,6 +22,7 @@
 #include <ctime>
 #include <iostream>
 #include <stdio.h>
+#include <iomanip>
 
 Logger::Logger(const bool en, const int lev) :
     enabled(en),
@@ -68,12 +69,21 @@ void Logger::logTime()
 {
     time_t now = time(0);
     tm *local_time = localtime(&now);
+    log << std::setfill(' ');
+    log << std::setw(2);
     log << local_time->tm_mday << '/';
+    log << std::setw(2);
     log << 1 + local_time->tm_mon<< '/';
     log << 1900 + local_time->tm_year << "  ";
+    log << std::setfill('0');
+    log << std::setw(2);
     log << local_time->tm_hour << ':';
+    log << std::setw(2);
     log << local_time->tm_min << ':';
+    log << std::setw(2);
     log << local_time->tm_sec << " Fan Controller: ";
+    log << std::setfill(' ');
+    log << std::setw(0);
 }
 
 void Logger::append(const std::string& stringToLog, const int level)
