@@ -41,23 +41,18 @@ Configurator::Configurator(int pn, int fr) :
     existsConfigFile(existsConfigFileTest()),
     config(),
     setting(existsConfigFile ? (config.readFile(CONFIGFILENAME.c_str()), config.getRoot()) : config.getRoot()),
-    pinNumber(pn),
-    PWMFrequencyHz(fr),
+    pinNumber(pn > 0 ? pn : (existsConfigFile ? (setting.exists("pinnumber") ? (int) setting["pinnumber"] : 14 ) : 14)),
+    PWMFrequencyHz(fr > 0 ? fr : (existsConfigFile ? (setting.exists("pwmfrequencyhz") ? (int) setting["pwmfrequencyhz"] : 10 ) : 10)),
     tempMinMC(existsConfigFile ? (setting.exists("tempminc") ? 1000 * (int) setting["tempminc"] : 45000 ) : 45000),
     tempMaxMC(existsConfigFile ? (setting.exists("tempmaxc") ? 1000 * (int) setting["tempmaxc"] : 60000 ) : 60000),
     dutyCycleMin(existsConfigFile ? (setting.exists("dutycycleminpr") ? (int) setting["dutycycleminpr"] : 20 ) : 20),
     dutyCycleMax(existsConfigFile ? (setting.exists("dutycyclemaxpr") ? (int) setting["dutycyclemaxpr"] : 100 ) : 100),
     maxPowTurnOnTimeMS(existsConfigFile ? (setting.exists("maxpowturnontimems") ? (int) setting["maxpowturnontimems"] : 0 ) : 0),
-    checkPeriodMaxMS(existsConfigFile ? (setting.exists("checkperiodmaxs") ? (int) setting["checkperiodmaxs"] * 1000 : 60000 ) : 60000),
-    checkPeriodMinMS(existsConfigFile ? (setting.exists("checkperiodmins") ? (int) setting["checkperiodmins"] * 1000 : 1000 ) : 1000),
+    checkPeriodMaxS(existsConfigFile ? (setting.exists("checkperiodmaxs") ? (int) setting["checkperiodmaxs"] : 60) : 60),
+    checkPeriodMinS(existsConfigFile ? (setting.exists("checkperiodmins") ? (int) setting["checkperiodmins"] : 1) : 1),
     checkMaxDeltaTempMC(existsConfigFile ? (setting.exists("checkmaxdeltatempc") ? 1000 * (int) setting["checkmaxdeltatempc"] : 2000 ) : 2000),
     logEnabled(existsConfigFile ? (setting.exists("logenabled") ? (bool) setting["logenabled"] : false ) : false),
     logLevel(existsConfigFile ? (setting.exists("loglevel") ? (int) setting["loglevel"] : 1 ) : 1)
-{
-    settingsCheck();
-}
-
-void Configurator::settingsCheck() const
 {
     static const std::set<std::string> keywords{"tempminc", "tempmaxc", "dutycycleminpr", "dutycyclemaxpr", "pwmfrequencyhz", "maxpowturnontimems", "pinnumber", "checkperiodmaxs", "checkperiodmins", "checkmaxdeltatempc", "logenabled", "loglevel"};
     checkForExtraSettings(keywords);
@@ -71,31 +66,11 @@ void Configurator::settingsCheck() const
     if (PWMFrequencyHz < 0 || PWMFrequencyHz > 100) throw std::runtime_error("PwM frequency out of range: allowed from 0 to 100Hz");
     if (maxPowTurnOnTimeMS < 0 || maxPowTurnOnTimeMS > 10000) throw std::runtime_error("Max-power turn-on time out of range: allowed from 0 to 10000ms");
     if (pinNumber < 0 || pinNumber > 64) throw std::runtime_error("Pin number out of range: allowed from 0 to 64");
-    if (checkPeriodMaxMS > 3600000 || checkPeriodMaxMS < 0) throw std::runtime_error("Maximum check period out of range: allowed from 0 to 3600s");
-    if (checkPeriodMinMS > 3600000 || checkPeriodMinMS < 0) throw std::runtime_error("Minimum check period out of range: allowed from 0 to 3600s");
-    if (checkPeriodMaxMS < checkPeriodMinMS) throw std::runtime_error("Maximum check period lower than minimum");
+    if (checkPeriodMaxS > 3600 || checkPeriodMaxS < 0) throw std::runtime_error("Maximum check period out of range: allowed from 0 to 3600s ");
+    if (checkPeriodMinS > 3600 || checkPeriodMinS < 0) throw std::runtime_error("Minimum check period out of range: allowed from 0 to 3600s");
+    if (checkPeriodMaxS < checkPeriodMinS) throw std::runtime_error("Maximum check period lower than minimum");
     if (checkMaxDeltaTempMC > 50000 || checkMaxDeltaTempMC < 0) throw std::runtime_error("Max delta temperature check out of range: allowed from 0 to 50C");
     if (logLevel < 1 || logLevel > 5) throw std::runtime_error("The log detail level is out of range: allowed from 1 to 5");
-}
-
-Configurator::Configurator() :
-    existsConfigFile(existsConfigFileTest()),
-    config(),
-    setting(existsConfigFile ? (config.readFile(CONFIGFILENAME.c_str()), config.getRoot()) : config.getRoot()),
-    pinNumber(existsConfigFile ? (setting.exists("pinnumber") ? (int) setting["pinnumber"] : 14 ) : 14),
-    PWMFrequencyHz(existsConfigFile ? (setting.exists("pwmfrequencyhz") ? (int) setting["pwmfrequencyhz"] : 10 ) : 10),
-    tempMinMC(existsConfigFile ? (setting.exists("tempminc") ? 1000 * (int) setting["tempminc"] : 50000 ) : 50000),
-    tempMaxMC(existsConfigFile ? (setting.exists("tempmaxc") ? 1000 * (int) setting["tempmaxc"] : 10000 ) : 10000),
-    dutyCycleMin(existsConfigFile ? (setting.exists("dutycycleminpr") ? (int) setting["dutycycleminpr"] : 20 ) : 20),
-    dutyCycleMax(existsConfigFile ? (setting.exists("dutycyclemaxpr") ? (int) setting["dutycyclemaxpr"] : 100 ) : 100),
-    maxPowTurnOnTimeMS(existsConfigFile ? (setting.exists("maxpowturnontimems") ? (int) setting["maxpowturnontimems"] : 0 ) : 0),
-    checkPeriodMaxMS(existsConfigFile ? (setting.exists("checkperiodmaxs") ? (int) setting["checkperiodmaxs"] * 1000: 60000 ) : 60000),
-    checkPeriodMinMS(existsConfigFile ? (setting.exists("checkperiodmins") ? (int) setting["checkperiodmins"] * 1000 : 1000 ) : 1000),
-    checkMaxDeltaTempMC(existsConfigFile ? (setting.exists("checkmaxdeltatempc") ? 1000 * (int) setting["checkmaxdeltatempc"] : 2000 ) : 2000),
-    logEnabled(existsConfigFile ? (setting.exists("logenabled") ? (bool) setting["logenabled"] : false ) : false),
-    logLevel(existsConfigFile ? (setting.exists("loglevel") ? (int) setting["loglevel"] : 1 ) : 1)
-{
-    settingsCheck();
 }
 
 Configurator::~Configurator()

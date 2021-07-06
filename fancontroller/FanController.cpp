@@ -22,20 +22,7 @@
 #include <wiringPi.h>
 #include <softPwm.h>
 #include <stdlib.h>
-
-FanController::FanController() :
-    configurator(),
-    tempReader(),
-    log(configurator.isLogEnabled(), configurator.getLogLevel()),
-    previousTemp(tempReader.readTemperatureMC()),
-    previousActivePWM(0),
-    previousCheckPeriod(configurator.getCheckPeriodMinMS()),
-    pwmperiod(10000 / configurator.getPWMFrequencyHz()),
-    pwmminperiod(pwmperiod * configurator.getDutyCycleMin() / 100)
-{
-    wiringPiSetup();
-    softPwmCreate(configurator.getPinNumber(), 0, pwmperiod) ;
-}
+#include <unistd.h>
 
 FanController::FanController(int pin, int freq) :
     configurator(pin, freq),
@@ -43,7 +30,7 @@ FanController::FanController(int pin, int freq) :
     log(configurator.isLogEnabled(), configurator.getLogLevel()),
     previousTemp(tempReader.readTemperatureMC()),
     previousActivePWM(0),
-    previousCheckPeriod(configurator.getCheckPeriodMinMS()),
+    previousCheckPeriod(configurator.getCheckPeriodMinS()),
     pwmperiod(10000 / configurator.getPWMFrequencyHz()),
     pwmminperiod(pwmperiod * configurator.getDutyCycleMin() / 100)
 {
@@ -81,7 +68,7 @@ void FanController::setPWMfromTemp(int tMC)
 
     if (previousActivePWM != activepwm)
     {
-        if (configurator.isLogEnabled()) log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Changed PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 0);
+        if (configurator.isLogEnabled()) log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Change PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 0);
         previousActivePWM = activepwm;
     }
     else
@@ -98,31 +85,31 @@ void FanController::delayForNextCheck(int tMC)
 
     if (deltaT == 0)
     {
-        checkperiod = configurator.getCheckPeriodMaxMS();
+        checkperiod = configurator.getCheckPeriodMaxS();
     }
     else
     {
         checkperiod = configurator.getCheckMaxDeltaTempMC() * previousCheckPeriod / deltaT;
 
-        if (checkperiod < configurator.getCheckPeriodMinMS())
+        if (checkperiod < configurator.getCheckPeriodMinS())
         {
-            checkperiod = configurator.getCheckPeriodMinMS();
+            checkperiod = configurator.getCheckPeriodMinS();
         }
-        else if (checkperiod > configurator.getCheckPeriodMaxMS())
+        else if (checkperiod > configurator.getCheckPeriodMaxS())
         {
-            checkperiod = configurator.getCheckPeriodMaxMS();
+            checkperiod = configurator.getCheckPeriodMaxS();
         }
 
         if (previousCheckPeriod != checkperiod)
         {
-            if (configurator.isLogEnabled()) log.append("Updtate temperature check period to: "+std::to_string(checkperiod/1000)+"s", 1);
+            if (configurator.isLogEnabled()) log.append("Updtate temperature check period to: "+std::to_string(checkperiod)+"s", 1);
             previousCheckPeriod = checkperiod;
         }
     }
 
     previousTemp = tMC;
 
-    delay(previousCheckPeriod);
+    sleep(previousCheckPeriod);
 }
 
 void FanController::setPWMfromDC(int dc)

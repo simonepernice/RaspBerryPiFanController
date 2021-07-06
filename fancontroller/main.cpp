@@ -17,6 +17,8 @@
 *   You should have received a copy of the GNU General Public License
 */
 
+#include <wiringPi.h>
+
 #include <iostream>
 #include <unistd.h>
 
@@ -45,8 +47,8 @@ void configTest ()
     std::cout << "The PWM frequency is " << cr.getPWMFrequencyHz() << "Hz\n";
     std::cout << "The max-power turn-on time is " << cr.getMaxPowTurnOnTimeMS() << "ms\n";
     std::cout << "The pin number is " << cr.getPinNumber() << "\n";
-    std::cout << "The max check period time is " << cr.getCheckPeriodMaxMS() << "ms\n";
-    std::cout << "The min check period time is " << cr.getCheckPeriodMinMS() << "ms\n";
+    std::cout << "The max check period time is " << cr.getCheckPeriodMaxS() << "ms\n";
+    std::cout << "The min check period time is " << cr.getCheckPeriodMinS() << "ms\n";
     std::cout << "The max delta-temperature per check is " << cr.getCheckMaxDeltaTempMC() << "mC\n";
     std::cout << "The log file is enabled " << cr.isLogEnabled() << "\n";
     std::cout << "The log level is " << cr.getLogLevel() << "\n";
@@ -59,9 +61,10 @@ int main(int argc, char *argv[])
         int pin = -1;
         int freq = -1;
         int dc = -1;
+        int st = 1000;
         int tm = 10;
         int c;
-        while ((c = getopt(argc, argv, "p:f:d:t:")) != -1)
+        while ((c = getopt(argc, argv, "p:f:d:t:s:")) != -1)
         {
             switch (c)
             {
@@ -77,19 +80,26 @@ int main(int argc, char *argv[])
                 case 't':
                     tm = atoi(optarg);
                     break;
+                case 's':
+                    st = atoi(optarg);
+                    break;
                 default:
                     std::cout << "Do not provide any option to run in background or set -f frequency, -d dutycycle, -t how long last the test and -p pin to run a test\n";
                     return 1;
             }
         }
-        if (pin < 0 || freq < 1 || freq > 100 || dc < 1 || dc > 100)
+        if (pin < 0 || pin > 64 || freq < 1 || freq > 100 || dc < 1 || dc > 100 || st > 10000 || st < 0)
         {
             std::cout << "Missing or not valid pin, frequency or duty cycle\n";
             return 1;
         }
+
         FanController fanc(pin, freq);
-        fanc.setPWMfromDC(dc);
+        std::cout << "Pin " << pin << " set at 100% " << " for " << st << " milliseconds" << std::endl;
+        fanc.setPWMfromDC(100);
+        delay(st);
         std::cout << "Pin " << pin << " set at frequency " << freq << " and duty cycle " << dc << " for " << tm << " seconds" << std::endl;
+        fanc.setPWMfromDC(dc);
         sleep(tm);
         std::cout << "Done.\nNow set to zero. " << std::endl;
         fanc.setPWMfromDC(0);

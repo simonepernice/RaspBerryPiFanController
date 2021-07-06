@@ -28,15 +28,13 @@
 class FanController
 {
     public:
-        FanController();
-        FanController(int, int);
+        FanController(int=-1, int=-1);
         virtual ~FanController();
 
         void run();
         void setPWMfromTemp(int);
         void setPWMfromDC(int);
         void delayForNextCheck(int);
-
 
     private:
         const Configurator configurator;

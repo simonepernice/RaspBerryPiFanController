@@ -28,8 +28,7 @@
 class Configurator
 {
     public:
-        Configurator();
-        Configurator(int, int);
+        Configurator(int=-1, int=-1);
         virtual ~Configurator();
 
         int getTempMinMC() const { return tempMinMC; }
@@ -39,8 +38,8 @@ class Configurator
         int getPWMFrequencyHz() const { return PWMFrequencyHz; }
         int getMaxPowTurnOnTimeMS() const { return maxPowTurnOnTimeMS; }
         int getPinNumber() const { return pinNumber; }
-        int getCheckPeriodMaxMS() const { return checkPeriodMaxMS; }
-        int getCheckPeriodMinMS() const { return checkPeriodMinMS; }
+        int getCheckPeriodMaxS() const { return checkPeriodMaxS; }
+        int getCheckPeriodMinS() const { return checkPeriodMinS; }
         int getCheckMaxDeltaTempMC() const { return checkMaxDeltaTempMC; }
         bool isLogEnabled() const { return logEnabled; }
         int getLogLevel() const { return logLevel; }
@@ -61,13 +60,12 @@ class Configurator
         const int dutyCycleMin;
         const int dutyCycleMax;
         const int maxPowTurnOnTimeMS;
-        const int checkPeriodMaxMS;
-        const int checkPeriodMinMS;
+        const int checkPeriodMaxS;
+        const int checkPeriodMinS;
         const int checkMaxDeltaTempMC;
         const bool logEnabled;
         const int logLevel;
 
-        void settingsCheck() const;
         bool existsConfigFileTest() const;
         void checkForExtraSettings(const std::set<std::string>&) const;
 };
