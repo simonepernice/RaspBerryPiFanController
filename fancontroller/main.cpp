@@ -63,6 +63,7 @@ int main(int argc, char *argv[])
         int dc = -1;
         int st = 1000;
         int tm = 10;
+
         int c;
         while ((c = getopt(argc, argv, "p:f:d:t:s:")) != -1)
         {
@@ -84,26 +85,31 @@ int main(int argc, char *argv[])
                     st = atoi(optarg);
                     break;
                 default:
-                    std::cout << "Do not provide any option to run in background or set -f frequency, -d dutycycle, -t how long last the test and -p pin to run a test\n";
+                    std::cout << "Do not provide any option to run in background or use the following to test the fan: -f frequency, -d dutycycle, -p pin where the fan is linked, -t seconds for run the test and -s milliseconds to run at 100%.\n";
                     return 1;
             }
         }
-        if (pin < 0 || pin > 64 || freq < 1 || freq > 100 || dc < 1 || dc > 100 || st > 10000 || st < 0)
+
+        if (pin < 0 || pin > 64 || freq < 1 || freq > 100 || dc < 1 || dc > 100 || st > 10000 || st < 0 || tm < 1 || tm > 100)
         {
-            std::cout << "Missing or not valid pin, frequency or duty cycle\n";
+            std::cout << "Missing or not valid pin, frequency, duty cycle, start or test time\n";
             return 1;
         }
 
         FanController fanc(pin, freq);
+
         std::cout << "Pin " << pin << " set at 100% " << " for " << st << " milliseconds" << std::endl;
         fanc.setPWMfromDC(100);
         delay(st);
+
         std::cout << "Pin " << pin << " set at frequency " << freq << " and duty cycle " << dc << " for " << tm << " seconds" << std::endl;
         fanc.setPWMfromDC(dc);
         sleep(tm);
+
         std::cout << "Done.\nNow set to zero. " << std::endl;
         fanc.setPWMfromDC(0);
         sleep(1);
+
         std::cout << "Bye bye.\n";
         return 0;
     }
@@ -111,7 +117,9 @@ int main(int argc, char *argv[])
     {
         FanController f;
         f.run(); //forever
+        return 1; //something goes wrong?
     }
+
     return 0;
 }
 

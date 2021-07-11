@@ -53,15 +53,19 @@ int Logger::countLogFileLines()
 {
     std::ifstream log;
     log.open(LOGFILENAME);
+
     if (! log.good())
     {
         log.close();
         return 0;
     }
+
     std::string line;
     int lines = 0;
     while(std::getline(log, line)) lines ++;
+
     log.close();
+
     return lines;
 }
 
@@ -69,9 +73,12 @@ void Logger::logTime()
 {
     time_t now = time(0);
     tm *local_time = localtime(&now);
+
     char timestr[20];
     strftime(timestr, 20, "%x %X", local_time);
+
     log << timestr;
+
     log << " Fan Controller: ";
 }
 
@@ -101,6 +108,7 @@ bool Logger::makeNewLogFile()
         if (! rename(LOGFILENAME.c_str(), (LOGFILENAME+".1").c_str()))
         {
             log.open(LOGFILENAME.c_str(), std::ios_base::trunc);
+
             logTime();
             log << "log file cleaned\n";
             logLines = 1;

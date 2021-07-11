@@ -45,6 +45,7 @@ class FanController
         int previousCheckPeriod;
         const int pwmperiod;
         const int pwmminperiod;
+        const int userdeltat;
 };
 
 #endif // FANCONTROLLER_H
