@@ -89,6 +89,10 @@ void FanController::delayForNextCheck(int tMC)
     {
         checkperiod = configurator.getCheckPeriodMaxS();
     }
+    else if (previousCheckPeriod >= configurator.getCheckPeriodMaxS() && deltaT <= configurator.getCheckMaxDeltaTempMC())
+    {
+        checkperiod = configurator.getCheckPeriodMaxS();
+    }
     else
     {
         checkperiod = configurator.getCheckMaxDeltaTempMC() * previousCheckPeriod / deltaT;

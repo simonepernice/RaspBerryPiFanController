@@ -1,5 +1,5 @@
 [Unit]
-Description=fancontroller is an advanced fan controller for Rasberry Pih
+Description=fancontroller is an advanced fan controller for Rasberry Pi
 After=network.target
 Wants=network.target
 
