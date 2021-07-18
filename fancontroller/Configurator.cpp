@@ -17,10 +17,17 @@
 *   You should have received a copy of the GNU General Public License
 */
 
-
 #include "Configurator.h"
 #include <fstream>
 #include <stdexcept>
+
+std::string PARAMETERNAMES[] =      {"pinnumber",   "pwmfreqyencyhz",   "tempminc",     "tempmaxc", "dutycycleminpr", "dutycyclemaxpr",     "maxpowturnontimems", "checkperiodmins",    "checkperiodmaxs",  "checkmaxdeltatempc", "logenabled",     "loglevel"  };
+int PARAMETERSCONVERSIONFACTORS[] = {1,             1,                  1000,           1000,       1,                  1,                  1,                      1,                  1,                  1000,                   1,              1           };
+int PARAMETERSDEFAULTVALUES[] =     {14,            10,                 45,             60,         20,                 100,                500,                    1,                  60,                 2,                      0,              1           };
+int PARAMETERSMINVALUES[] =         {0,             1,                  0,              0,          0,                  0,                  0,                      1,                  1,                  0,                      0,              0           };
+int PARAMETERSMAXVALUES[] =         {64,            200,                100,            100,        100,                100,                10000,                  3600,               3600,               20,                     1,              5           };
+
+Configurator::Parameters ORDEREDCOUPLES[3][2] = {{Configurator::TMIN, Configurator::TMAX}, {Configurator::DCMIN, Configurator::DCMAX}, {Configurator::CPMIN, Configurator::CPMAX}};
 
 bool Configurator::existsConfigFileTest() const
 {
@@ -42,40 +49,80 @@ void Configurator::checkForExtraSettings(const std::set<std::string>& keywords) 
     }
 }
 
+std::array<bool, Configurator::N_OF_PARAMETERS> Configurator::readIfParametersDefined () const
+{
+    std::array<bool, N_OF_PARAMETERS> defined;
+    for (int i=0; i<N_OF_PARAMETERS; ++i)
+    {
+        if (!existsConfigFile)
+        {
+            defined[i] = false;
+        }
+        else
+        {
+            defined[i] = setting.exists(PARAMETERNAMES[static_cast<Parameters>(i)]);
+        }
+    }
+    return defined;
+}
+
+std::array<int, Configurator::N_OF_PARAMETERS> Configurator::readParametersValue (const std::array<int, N_OF_PARAMETERS> & forced) const
+{
+    std::array<int, N_OF_PARAMETERS> value;
+    for (int i=0; i<N_OF_PARAMETERS; ++i)
+    {
+        if (parameterDefined[static_cast<Parameters>(i)])
+        {
+            value[i] = (int) setting[PARAMETERNAMES[static_cast<Parameters>(i)]] * PARAMETERSCONVERSIONFACTORS[static_cast<Parameters>(i)];
+        }
+        else
+        {
+            if (forced[i] < 0)
+            {
+                value[i] = PARAMETERSDEFAULTVALUES[static_cast<Parameters>(i)] * PARAMETERSCONVERSIONFACTORS[static_cast<Parameters>(i)];
+            }
+            else
+            {
+                value[i] = forced[i];
+            }
+        }
+    }
+    return value;
+}
+
 Configurator::Configurator(int pn, int fr) :
     existsConfigFile(existsConfigFileTest()),
     config(),
     setting(existsConfigFile ? (config.readFile(CONFIGFILENAME.c_str()), config.getRoot()) : config.getRoot()),
-    pinNumber(pn > 0 ? pn : (existsConfigFile ? (setting.exists("pinnumber") ? (int) setting["pinnumber"] : 14 ) : 14)),
-    PWMFrequencyHz(fr > 0 ? fr : (existsConfigFile ? (setting.exists("pwmfrequencyhz") ? (int) setting["pwmfrequencyhz"] : 10 ) : 10)),
-    tempMinMC(existsConfigFile ? (setting.exists("tempminc") ? 1000 * (int) setting["tempminc"] : 45000 ) : 45000),
-    tempMaxMC(existsConfigFile ? (setting.exists("tempmaxc") ? 1000 * (int) setting["tempmaxc"] : 60000 ) : 60000),
-    dutyCycleMin(existsConfigFile ? (setting.exists("dutycycleminpr") ? (int) setting["dutycycleminpr"] : 20 ) : 20),
-    dutyCycleMax(existsConfigFile ? (setting.exists("dutycyclemaxpr") ? (int) setting["dutycyclemaxpr"] : 100 ) : 100),
-    maxPowTurnOnTimeMS(existsConfigFile ? (setting.exists("maxpowturnontimems") ? (int) setting["maxpowturnontimems"] : 500 ) : 500),
-    checkPeriodMaxS(existsConfigFile ? (setting.exists("checkperiodmaxs") ? (int) setting["checkperiodmaxs"] : 60) : 60),
-    checkPeriodMinS(existsConfigFile ? (setting.exists("checkperiodmins") ? (int) setting["checkperiodmins"] : 1) : 1),
-    checkMaxDeltaTempMC(existsConfigFile ? (setting.exists("checkmaxdeltatempc") ? 1000 * (int) setting["checkmaxdeltatempc"] : 2000 ) : 2000),
-    logEnabled(existsConfigFile ? (setting.exists("logenabled") ? (bool) setting["logenabled"] : false ) : false),
-    logLevel(existsConfigFile ? (setting.exists("loglevel") ? (int) setting["loglevel"] : 1 ) : 1)
+    parameterDefined(readIfParametersDefined()),
+    parameterValue(readParametersValue({pn, fr, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}))
 {
-    static const std::set<std::string> keywords{"tempminc", "tempmaxc", "dutycycleminpr", "dutycyclemaxpr", "pwmfrequencyhz", "maxpowturnontimems", "pinnumber", "checkperiodmaxs", "checkperiodmins", "checkmaxdeltatempc", "logenabled", "loglevel"};
+    std::set<std::string> keywords;
+    for (int i=0; i<N_OF_PARAMETERS; ++i)
+    {
+        keywords.insert(PARAMETERNAMES[i]);
+    }
     checkForExtraSettings(keywords);
 
-    if (tempMinMC > 100000 || tempMinMC < 0) throw std::runtime_error("Temperature minumum is out of range: allowed from 0 to 100C");
-    if (tempMaxMC > 100000 || tempMaxMC < 0) throw std::runtime_error("Temperature maximum is out of range: allowed from 0 to 100C");
-    if (tempMinMC >= tempMaxMC) throw std::runtime_error("Temperature minimum is higher than maximum");
-    if (dutyCycleMin > 100 || dutyCycleMin < 0) throw std::runtime_error("Minumum duty cycle out of range: allowed from 0 to 100%");
-    if (dutyCycleMax > 100 || dutyCycleMax < 0) throw std::runtime_error("Maximum duty cycle out of range: allowed from 0 to 100%");
-    if (dutyCycleMax <= dutyCycleMin) throw std::runtime_error("Maximum duty cycle lower than minimum");
-    if (PWMFrequencyHz < 0 || PWMFrequencyHz > 100) throw std::runtime_error("PwM frequency out of range: allowed from 0 to 100Hz");
-    if (maxPowTurnOnTimeMS < 0 || maxPowTurnOnTimeMS > 10000) throw std::runtime_error("Max-power turn-on time out of range: allowed from 0 to 10000ms");
-    if (pinNumber < 0 || pinNumber > 64) throw std::runtime_error("Pin number out of range: allowed from 0 to 64");
-    if (checkPeriodMaxS > 3600 || checkPeriodMaxS < 0) throw std::runtime_error("Maximum check period out of range: allowed from 0 to 3600s ");
-    if (checkPeriodMinS > 3600 || checkPeriodMinS < 0) throw std::runtime_error("Minimum check period out of range: allowed from 0 to 3600s");
-    if (checkPeriodMaxS <= checkPeriodMinS) throw std::runtime_error("Maximum check period lower than minimum");
-    if (checkMaxDeltaTempMC > 20000 || checkMaxDeltaTempMC < 0) throw std::runtime_error("Max delta temperature check out of range: allowed from 0 to 20C");
-    if (logLevel < 1 || logLevel > 5) throw std::runtime_error("The log detail level is out of range: allowed from 1 to 5");
+    for (int i=0; i<N_OF_PARAMETERS; ++i)
+    {
+        if (parameterValue[i] > PARAMETERSMAXVALUES[i] * PARAMETERSCONVERSIONFACTORS[i])
+        {
+            throw std::runtime_error("The parameter "+PARAMETERNAMES[i]+ " exceeds the maximum allowed value "+std::to_string(PARAMETERSMAXVALUES[i]));
+        }
+        else if (parameterValue[i] < PARAMETERSMINVALUES[i] * PARAMETERSCONVERSIONFACTORS[i])
+        {
+            throw std::runtime_error("The parameter "+PARAMETERNAMES[i]+ " is below the minimum allowed value "+std::to_string(PARAMETERSMINVALUES[i]));
+        }
+    }
+
+    for (int i=0; i<int(sizeof(ORDEREDCOUPLES)/sizeof(ORDEREDCOUPLES[0])); ++i)
+    {
+        if (parameterValue[ORDEREDCOUPLES[i][0]] >= parameterValue[ORDEREDCOUPLES[i][1]])
+        {
+            throw std::runtime_error("The parameter "+PARAMETERNAMES[ORDEREDCOUPLES[i][0]]+ " exceeds "+PARAMETERNAMES[ORDEREDCOUPLES[i][1]]+" while it should be below");
+        }
+    }
 }
 
 Configurator::~Configurator()

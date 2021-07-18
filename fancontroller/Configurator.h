@@ -22,52 +22,52 @@
 #define CONFIGURATOR_H
 
 #include <set>
+#include <array>
 
 #include "libconfig.h++"
 
 class Configurator
 {
     public:
+        enum Parameters {PIN, FREQ, TMIN, TMAX, DCMIN, DCMAX, TOTME, CPMIN, CPMAX, DTMAX, LOGEN, LOGLEV, N_OF_PARAMETERS};
+
         Configurator(int=-1, int=-1);
         virtual ~Configurator();
 
-        int getTempMinMC() const { return tempMinMC; }
-        int getTempMaxMC() const { return tempMaxMC; }
-        int getDutyCycleMin() const  { return dutyCycleMin; }
-        int getDutyCycleMax() const { return dutyCycleMax; }
-        int getPWMFrequencyHz() const { return PWMFrequencyHz; }
-        int getMaxPowTurnOnTimeMS() const { return maxPowTurnOnTimeMS; }
-        int getPinNumber() const { return pinNumber; }
-        int getCheckPeriodMaxS() const { return checkPeriodMaxS; }
-        int getCheckPeriodMinS() const { return checkPeriodMinS; }
-        int getCheckMaxDeltaTempMC() const { return checkMaxDeltaTempMC; }
-        bool isLogEnabled() const { return logEnabled; }
-        int getLogLevel() const { return logLevel; }
+        int getTempMinMC() const { return parameterValue[TMIN]; }
+        int getTempMaxMC() const { return parameterValue[TMAX]; }
+        int getDutyCycleMin() const  { return parameterValue[DCMIN]; }
+        int getDutyCycleMax() const { return parameterValue[DCMAX]; }
+        int getPWMFrequencyHz() const { return parameterValue[FREQ]; }
+        int getMaxPowTurnOnTimeMS() const { return parameterValue[TOTME]; }
+        int getPinNumber() const { return parameterValue[PIN]; }
+        int getCheckPeriodMaxS() const { return parameterValue[CPMAX]; }
+        int getCheckPeriodMinS() const { return parameterValue[CPMIN]; }
+        int getCheckMaxDeltaTempMC() const { return parameterValue[DTMAX]; }
+        bool isLogEnabled() const { return parameterValue[LOGEN]; }
+        int getLogLevel() const { return parameterValue[LOGLEV]; }
 
     private:
+        static const std::string PARAMETERNAMES[];
+        static const int PARAMETERSCONVERSIONFACTORS[];
+        static const int PARAMETERSDEFAULTVALUES[];
+        static const int PARAMETERSMINVALUES[];
+        static const int PARAMETERSMAXVALUES[];
+        static const Parameters ORDEREDCOUPLES[3][2];
+
+        bool existsConfigFileTest() const;
+        void checkForExtraSettings(const std::set<std::string>&) const;
+        std::array<bool, N_OF_PARAMETERS> readIfParametersDefined () const;
+        std::array<int, N_OF_PARAMETERS> readParametersValue (const std::array<int, N_OF_PARAMETERS> &) const;
+
         const std::string CONFIGFILENAME = "/etc/fancontroller.cfg";
 
         const bool existsConfigFile;
         libconfig::Config config;
         const libconfig::Setting& setting;
 
-
-        const int pinNumber;
-        const int PWMFrequencyHz;
-
-        const int tempMinMC;
-        const int tempMaxMC;
-        const int dutyCycleMin;
-        const int dutyCycleMax;
-        const int maxPowTurnOnTimeMS;
-        const int checkPeriodMaxS;
-        const int checkPeriodMinS;
-        const int checkMaxDeltaTempMC;
-        const bool logEnabled;
-        const int logLevel;
-
-        bool existsConfigFileTest() const;
-        void checkForExtraSettings(const std::set<std::string>&) const;
+        const std::array<bool, N_OF_PARAMETERS> parameterDefined;
+        const std::array<int, N_OF_PARAMETERS> parameterValue;
 };
 
 #endif // CONFIGURATOR_H
