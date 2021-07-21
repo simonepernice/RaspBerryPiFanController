@@ -25,7 +25,7 @@ std::string PARAMETERNAMES[] =      {"pinnumber",   "pwmfreqyencyhz",   "tempmin
 int PARAMETERSCONVERSIONFACTORS[] = {1,             1,                  1000,           1000,       1,                  1,                  1,                      1,                  1,                  1000,                   1,              1           };
 int PARAMETERSDEFAULTVALUES[] =     {14,            10,                 45,             60,         20,                 100,                500,                    1,                  60,                 2,                      0,              1           };
 int PARAMETERSMINVALUES[] =         {0,             1,                  0,              0,          0,                  0,                  0,                      1,                  1,                  0,                      0,              0           };
-int PARAMETERSMAXVALUES[] =         {64,            200,                100,            100,        100,                100,                10000,                  3600,               3600,               20,                     1,              5           };
+int PARAMETERSMAXVALUES[] =         {64,            200,                100,            100,        100,                100,                10000,                  3600,               3600,               30,                     1,              5           };
 
 Configurator::Parameters ORDEREDCOUPLES[3][2] = {{Configurator::TMIN, Configurator::TMAX}, {Configurator::DCMIN, Configurator::DCMAX}, {Configurator::CPMIN, Configurator::CPMAX}};
 
@@ -60,30 +60,30 @@ std::array<bool, Configurator::N_OF_PARAMETERS> Configurator::readIfParametersDe
         }
         else
         {
-            defined[i] = setting.exists(PARAMETERNAMES[static_cast<Parameters>(i)]);
+            defined[i] = setting.exists(PARAMETERNAMES[i]);
         }
     }
     return defined;
 }
 
-std::array<int, Configurator::N_OF_PARAMETERS> Configurator::readParametersValue (const std::array<int, N_OF_PARAMETERS> & forced) const
+std::array<int, Configurator::N_OF_PARAMETERS> Configurator::readParametersValue () const
 {
     std::array<int, N_OF_PARAMETERS> value;
     for (int i=0; i<N_OF_PARAMETERS; ++i)
     {
-        if (parameterDefined[static_cast<Parameters>(i)])
+        if (parameterForced[i] >= 0)
         {
-            value[i] = (int) setting[PARAMETERNAMES[static_cast<Parameters>(i)]] * PARAMETERSCONVERSIONFACTORS[static_cast<Parameters>(i)];
+            value[i] = parameterForced[i] * PARAMETERSCONVERSIONFACTORS[i];
         }
         else
         {
-            if (forced[i] < 0)
+            if (parameterDefined[i])
             {
-                value[i] = PARAMETERSDEFAULTVALUES[static_cast<Parameters>(i)] * PARAMETERSCONVERSIONFACTORS[static_cast<Parameters>(i)];
+                value[i] = (int) setting[PARAMETERNAMES[i]] * PARAMETERSCONVERSIONFACTORS[i];
             }
             else
             {
-                value[i] = forced[i];
+                value[i] = PARAMETERSDEFAULTVALUES[i] * PARAMETERSCONVERSIONFACTORS[i];
             }
         }
     }
@@ -95,7 +95,8 @@ Configurator::Configurator(int pn, int fr) :
     config(),
     setting(existsConfigFile ? (config.readFile(CONFIGFILENAME.c_str()), config.getRoot()) : config.getRoot()),
     parameterDefined(readIfParametersDefined()),
-    parameterValue(readParametersValue({pn, fr, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}))
+    parameterForced({pn, fr, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1}),
+    parameterValue(readParametersValue())
 {
     std::set<std::string> keywords;
     for (int i=0; i<N_OF_PARAMETERS; ++i)
@@ -108,7 +109,7 @@ Configurator::Configurator(int pn, int fr) :
     {
         if (parameterValue[i] > PARAMETERSMAXVALUES[i] * PARAMETERSCONVERSIONFACTORS[i])
         {
-            throw std::runtime_error("The parameter "+PARAMETERNAMES[i]+ " exceeds the maximum allowed value "+std::to_string(PARAMETERSMAXVALUES[i]));
+            throw std::runtime_error("The parameter "+PARAMETERNAMES[i]+ " is above the maximum allowed value "+std::to_string(PARAMETERSMAXVALUES[i]));
         }
         else if (parameterValue[i] < PARAMETERSMINVALUES[i] * PARAMETERSCONVERSIONFACTORS[i])
         {
@@ -116,11 +117,11 @@ Configurator::Configurator(int pn, int fr) :
         }
     }
 
-    for (int i=0; i<int(sizeof(ORDEREDCOUPLES)/sizeof(ORDEREDCOUPLES[0])); ++i)
+    for (int i=0; i<int(sizeof(ORDEREDCOUPLES))/int(sizeof(ORDEREDCOUPLES[0])); ++i)
     {
         if (parameterValue[ORDEREDCOUPLES[i][0]] >= parameterValue[ORDEREDCOUPLES[i][1]])
         {
-            throw std::runtime_error("The parameter "+PARAMETERNAMES[ORDEREDCOUPLES[i][0]]+ " exceeds "+PARAMETERNAMES[ORDEREDCOUPLES[i][1]]+" while it should be below");
+            throw std::runtime_error("The parameter "+PARAMETERNAMES[ORDEREDCOUPLES[i][0]]+ " is higher than "+PARAMETERNAMES[ORDEREDCOUPLES[i][1]]+" while it should be lower");
         }
     }
 }

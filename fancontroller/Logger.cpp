@@ -24,9 +24,9 @@
 #include <stdio.h>
 #include <iomanip>
 
-Logger::Logger(const bool en, const int lev) :
-    enabled(en),
-    logLevel(lev),
+Logger::Logger(Configurator c) :
+    enabled(c.isLogEnabled()),
+    logLevel(c.getLogLevel()),
     logLines(0)
 {
     if (enabled)
@@ -36,6 +36,27 @@ Logger::Logger(const bool en, const int lev) :
         logTime();
         log << "started\n";
         logLines ++;
+        if (logLevel >= 5)
+        {
+            for (int i=0; i<Configurator::N_OF_PARAMETERS; ++ i)
+            {
+                Configurator::Parameters p = static_cast<Configurator::Parameters>(i);
+                log << "Parameter " << c.getParameterName(p);
+                if (c.isParameterForced(p))
+                {
+                    log << " was forced at ";
+                }
+                else if (c.isParameterDefined(p))
+                {
+                    log << " was read from config file at ";
+                }
+                else
+                {
+                    log << " was set by default value at ";
+                }
+                log << c.getParameterValue(p) << "\n";
+            }
+        }
     }
 }
 

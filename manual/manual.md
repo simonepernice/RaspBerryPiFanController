@@ -158,9 +158,10 @@ The purpose of the log file is to check the *fan controller* parameters are corr
 The log file provides these pieces of information:
 
 * CPU temperature and PWM percentage
-    * loglevel 0 print it only when it changes
-    * loglevel 2 print it at every check
+    * loglevel 0 prints it only when it changes
+    * loglevel 2 prints it at every check
 * Temperature check period 
-    * loglevel 1 print it only when it changes
-    * loglevel 4 print it at every check
-
+    * loglevel 1 prints it only when it changes
+    * loglevel 4 prints it at every check
+* Parameter settings (values and where they come from: config files, forced by the program, default value)
+    * loglevel 5 prints all settings 

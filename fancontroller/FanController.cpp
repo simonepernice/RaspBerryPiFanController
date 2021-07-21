@@ -27,7 +27,7 @@
 FanController::FanController(int pin, int freq) :
     configurator(pin, freq),
     tempReader(),
-    log(configurator.isLogEnabled(), configurator.getLogLevel()),
+    log(configurator),
     previousTemp(tempReader.readTemperatureMC()),
     previousActivePWM(0),
     previousCheckPeriod(configurator.getCheckPeriodMinS()),

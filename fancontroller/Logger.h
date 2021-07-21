@@ -23,10 +23,12 @@
 #include <fstream>
 #include <string>
 
+#include "Configurator.h"
+
 class Logger
 {
     public:
-        Logger(const bool, const int);
+        Logger(Configurator);
         virtual ~Logger();
         void append(const std::string&, const int);
 

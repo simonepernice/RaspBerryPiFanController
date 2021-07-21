@@ -47,6 +47,12 @@ class Configurator
         bool isLogEnabled() const { return parameterValue[LOGEN]; }
         int getLogLevel() const { return parameterValue[LOGLEV]; }
 
+        const std::string& getParameterName(Parameters p) const {return PARAMETERNAMES[p];}
+        int getParameterValue(Parameters p) const {return parameterValue[p];}
+        bool isParameterDefined(Parameters p) const {return parameterDefined[p];}
+        bool isParameterForced(Parameters p) const {return parameterForced[p]>=0;}
+        bool isThereConfigFile() const {return existsConfigFile;}
+
     private:
         static const std::string PARAMETERNAMES[];
         static const int PARAMETERSCONVERSIONFACTORS[];
@@ -58,7 +64,7 @@ class Configurator
         bool existsConfigFileTest() const;
         void checkForExtraSettings(const std::set<std::string>&) const;
         std::array<bool, N_OF_PARAMETERS> readIfParametersDefined () const;
-        std::array<int, N_OF_PARAMETERS> readParametersValue (const std::array<int, N_OF_PARAMETERS> &) const;
+        std::array<int, N_OF_PARAMETERS> readParametersValue () const;
 
         const std::string CONFIGFILENAME = "/etc/fancontroller.cfg";
 
@@ -67,6 +73,7 @@ class Configurator
         const libconfig::Setting& setting;
 
         const std::array<bool, N_OF_PARAMETERS> parameterDefined;
+        const std::array<int, N_OF_PARAMETERS> parameterForced;
         const std::array<int, N_OF_PARAMETERS> parameterValue;
 };
 
