@@ -1,15 +1,15 @@
 # Raspberry Pi Fan Controller
 
-*Fan Controller* is designed to drive a PWM fan on a Raspberry Pi proportionally to the CPU temperature. It is designed to use very low resources and be totally configurable.
+*Fan Controller* is designed to drive a PWM fan on a Raspberry Pi at a speed proportional to the CPU temperature. It is designed to use very low resources and be totally configurable.
 
-The latest Rasberry Pi versions are more powerful but they also need a fan. It is noisy and needs power. The purpose of this application is to run the fan as less as possible using as few Rasberry Pi resources as possible.
+The latest Rasberry Pi versions are more powerful but they also need a fan to get maximum performance. It is noisy and needs power. The purpose of this application is to run the fan as less as possible using as few Rasberry Pi resources as possible.
 
 Copyright (C) 2020 Simone Pernice <pernice@libero.it>. 
 
 *Fan Controller* is provided under GNU General Public License version 3 as published by the Free Software Foundation.
 
-*Fan Controller* is programmed in C++ for maximum energy efficiency. Other programming languages like Java or Python would have required much more memory and CPU cycles to perform the same tasks. 
-*Fan Controller* has plenty of configuration options to adapt at every load condition. 
+*Fan Controller* is programmed in C++ for maximum energy efficiency. Other programming languages like Java or Python would have required much more memory and CPU cycles to perform the same task. 
+*Fan Controller* has plenty of configuration options to adapt at every condition. 
 *Fan Controller* wants to fresh Raspberry while it is executing complex tasks, it does not want to be the reason for heating!!!
 
 *Fan Controller* requires the following libraries:
@@ -29,7 +29,7 @@ Copyright (C) 2020 Simone Pernice <pernice@libero.it>.
 
 *Fan Controller* drives a fan with a PWM signal on a GPIO pin of Raspberry header. 
 
-*Fan Controller* monitors the CPU temperature and compares it against a temperature interval. 
+*Fan Controller* compares the CPU temperature against a temperature interval. 
 
 * If the CPU temperature is below that interval: the PWM is set to 0% -> no fan noise/power drain
 * If the CPU temperature drops within that interval: the PWM duty cycle is set proportionally to the temperature -> minimum acceptable noise/power drain
@@ -37,14 +37,29 @@ Copyright (C) 2020 Simone Pernice <pernice@libero.it>.
 
 *Fan Controller* checks the CPU temperature every once in a while depending on its variation rate. The more stable the temperature the less frequent the check in order to reduce the Raspberry resource requirement. 
 
-* If there was a temperature change exceeding the maximum temperature variation expected -> the maximum check rate is used
-* If there was a temperature change lower than the maximum temperature variation expected -> the check rate is linearly estimated to reach the maximum temperature variation expected at next read. Howeve if ths time is shorter than the minimum check rate, it is used instead
+* If, since the last check, there was a temperature change below the maximum temperature variation expected -> the longest check time is used
+* If, since the last check, there was a temperature change above the maximum temperature variation expected -> the next check time is linearly estimated to reach the maximum temperature variation expected at next read. However, if ths time is shorter than the minimum check rate, it is used instead
 
 *Fan Controller* manages a log file `/var/log/fancontroller.log` where it writes all the actions executed to keep the CPU fresh. Its purpose is to validate the settings, logging can be disabled once the configuration works properly to save computational power.
 
 *Fan Controller* can be lunched with arguments. In that mode, it is used to calibrate fan parameters (control pin, frequency, duty cycle, full power turn on timing). 
 
 *Fan Controller* works as service if lunched without arguments. It is automatically lunched at startup by the `systemd`. In that mode it run the PWM for the fan to keep Raspberry fresh. 
+
+#Install
+
+The quickest way to install *Fan Controller*, is to launch the install.sh script with sudo: sudo ./install.sh
+
+It executes the following tasks:
+
+* copys fancontroller, the binary file, below /usr/bin
+* copys fancontroller.cfg, the basic configuration file, below /etc
+* copys fancontroller.service, the service configuration file, below /etc/systemd/system
+* enables and starts the fancontroller service
+	
+A better way would be to find the best settings for the system running *Fan Controller* from the command line, providing the arguments to test the fan.
+Once the optimal parameters are found, they can be written in ./config/fancontroller.cfg
+Eventually the install script can be lunched: sudo ./install.sh
 
 #Fan adaptor
 
@@ -65,7 +80,7 @@ Those components should be linked as follow:
 * The NMOS source goes to Raspberry GND 
 * The NMOS gate goes to raspberry GPIO for PWM controllcan
 * The pull-down resistor links the transistor gate (GPIO) and source (GND)
-* The Shottky diode is linked with anode on the transistor drain and positive on the fan positive line 
+* The Shottky diode is linked with anode on the transistor drain and catode on the fan positive line 
 
 There are plenty of schematic online showing how to make this adaptor. A simple example I found online follows: ![fan adapter for PWM controll](./fanSchematic.jpeg)
 
@@ -141,12 +156,12 @@ At startup, *Fan Controller* searches for a configuration file located on `/etc/
     * measurement unit Celsius degree 
     * it is the maximum temperature change expected between readings, if the delta exceeds that value, the time between checks is proportionally reduced (down to checkperiodmins), otherwise it is proportionally incremented (up to checkperiodmaxs)
 * logenabled
-    * default false
-    * type boolean (true or false)
-    * if true a log file is written on `/var/log/fancontroller.log`
-* loglevel
     * default 1
-    * type integer (1 to 5) 
+    * type int (0 to 1)
+    * if 1 a log file is written on `/var/log/fancontroller.log`
+* loglevel
+    * default 0 
+    * type integer (0 to 5) 
     * it sets how many internal parameters write on the log file, the higher the number the verboser is the log file
 
 #Logging parameters
@@ -156,12 +171,13 @@ The log file is saved on `/var/log/fancontroller.log`. If the maximum number of 
 The purpose of the log file is to check the *fan controller* parameters are correct, once the settings are good, it is suggested to disable the logging to avoid extra computational effort.
 
 The log file provides these pieces of information:
-
+* If the config file was found
+    * loglevel 0 prints if a confing file was found, if not the default values are used
 * CPU temperature and PWM percentage
-    * loglevel 0 prints it only when it changes
-    * loglevel 2 prints it at every check
+    * loglevel 1 or less, prints it only when it changes
+    * loglevel 3 or less, prints it at every check
 * Temperature check period 
-    * loglevel 1 prints it only when it changes
-    * loglevel 4 prints it at every check
+    * loglevel 2 or less, prints it only when it changes
+    * loglevel 4 or less, prints it at every check
 * Parameter settings (values and where they come from: config files, forced by the program, default value)
-    * loglevel 5 prints all settings 
+    * loglevel 5 or less, prints all settings 

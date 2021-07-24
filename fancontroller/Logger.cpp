@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <iomanip>
 
-Logger::Logger(Configurator c) :
+Logger::Logger(const Configurator&  c) :
     enabled(c.isLogEnabled()),
     logLevel(c.getLogLevel()),
     logLines(0)
@@ -36,6 +36,12 @@ Logger::Logger(Configurator c) :
         logTime();
         log << "started\n";
         logLines ++;
+
+        log << "Config file found: " ;
+        if (c.isThereConfigFile()) log << "yes";
+        else log << "no";
+        log << '\n';
+
         if (logLevel >= 5)
         {
             for (int i=0; i<Configurator::N_OF_PARAMETERS; ++ i)
@@ -54,7 +60,7 @@ Logger::Logger(Configurator c) :
                 {
                     log << " was set by default value at ";
                 }
-                log << c.getParameterValue(p) << "\n";
+                log << c.getParameterValue(p) << ' ' << c.getParameterMeasurementUnit(p) << "\n";
             }
         }
     }

@@ -67,13 +67,13 @@ void FanController::setPWMfromTemp(int tMC)
 
     if (previousActivePWM != activepwm)
     {
-        if (configurator.isLogEnabled()) log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Change PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 0);
+        if (configurator.isLogEnabled()) log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Change PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 1);
 
         previousActivePWM = activepwm;
     }
     else
     {
-        if (configurator.isLogEnabled()) log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Keep   PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 2);
+        if (configurator.isLogEnabled()) log.append("CPU temperature: "+std::to_string(tMC/1000)+"C, Keep   PWM to: "+std::to_string(activepwm*100/pwmperiod)+"%", 3);
     }
 
     softPwmWrite(configurator.getPinNumber(), activepwm);
@@ -109,7 +109,7 @@ void FanController::delayForNextCheck(int tMC)
 
     if (previousCheckPeriod != checkperiod)
     {
-        if (configurator.isLogEnabled()) log.append("Change temperature check period to: "+std::to_string(checkperiod)+"s", 1);
+        if (configurator.isLogEnabled()) log.append("Change temperature check period to: "+std::to_string(checkperiod)+"s", 2);
 
         previousCheckPeriod = checkperiod;
     }

@@ -21,14 +21,6 @@
 #include <fstream>
 #include <stdexcept>
 
-std::string PARAMETERNAMES[] =      {"pinnumber",   "pwmfreqyencyhz",   "tempminc",     "tempmaxc", "dutycycleminpr", "dutycyclemaxpr",     "maxpowturnontimems", "checkperiodmins",    "checkperiodmaxs",  "checkmaxdeltatempc", "logenabled",     "loglevel"  };
-int PARAMETERSCONVERSIONFACTORS[] = {1,             1,                  1000,           1000,       1,                  1,                  1,                      1,                  1,                  1000,                   1,              1           };
-int PARAMETERSDEFAULTVALUES[] =     {14,            10,                 45,             60,         20,                 100,                500,                    1,                  60,                 2,                      0,              1           };
-int PARAMETERSMINVALUES[] =         {0,             1,                  0,              0,          0,                  0,                  0,                      1,                  1,                  0,                      0,              0           };
-int PARAMETERSMAXVALUES[] =         {64,            200,                100,            100,        100,                100,                10000,                  3600,               3600,               30,                     1,              5           };
-
-Configurator::Parameters ORDEREDCOUPLES[3][2] = {{Configurator::TMIN, Configurator::TMAX}, {Configurator::DCMIN, Configurator::DCMAX}, {Configurator::CPMIN, Configurator::CPMAX}};
-
 bool Configurator::existsConfigFileTest() const
 {
     std::ifstream infile(CONFIGFILENAME);

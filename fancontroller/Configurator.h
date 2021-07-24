@@ -48,18 +48,21 @@ class Configurator
         int getLogLevel() const { return parameterValue[LOGLEV]; }
 
         const std::string& getParameterName(Parameters p) const {return PARAMETERNAMES[p];}
-        int getParameterValue(Parameters p) const {return parameterValue[p];}
+        const std::string& getParameterMeasurementUnit(Parameters p) const {return PARAMETERMEASUNIT[p];}
+        int getParameterValue(Parameters p) const {return parameterValue[p]/PARAMETERSCONVERSIONFACTORS[p];}
         bool isParameterDefined(Parameters p) const {return parameterDefined[p];}
         bool isParameterForced(Parameters p) const {return parameterForced[p]>=0;}
         bool isThereConfigFile() const {return existsConfigFile;}
 
     private:
-        static const std::string PARAMETERNAMES[];
-        static const int PARAMETERSCONVERSIONFACTORS[];
-        static const int PARAMETERSDEFAULTVALUES[];
-        static const int PARAMETERSMINVALUES[];
-        static const int PARAMETERSMAXVALUES[];
-        static const Parameters ORDEREDCOUPLES[3][2];
+        const std::string PARAMETERNAMES[12] =      {"pinnumber",   "pwmfrequencyhz",   "tempminc",     "tempmaxc", "dutycycleminpr",   "dutycyclemaxpr",   "maxpowturnontimems",  "checkperiodmins",    "checkperiodmaxs",  "checkmaxdeltatempc",   "logenabled",   "loglevel"  };
+        const std::string PARAMETERMEASUNIT[12] =   {"#",           "Hz",               "C",            "C",        "%",                "%",                "ms",                  "s",                  "s",                "C",                    "",             ""          };
+        const int PARAMETERSCONVERSIONFACTORS[12] = {1,             1,                  1000,           1000,       1,                  1,                  1,                      1,                  1,                  1000,                   1,              1           };
+        const int PARAMETERSDEFAULTVALUES[12] =     {14,            10,                 45,             60,         20,                 100,                500,                    1,                  60,                 2,                      1,              0           };
+        const int PARAMETERSMINVALUES[12] =         {0,             1,                  0,              0,          0,                  0,                  0,                      1,                  1,                  0,                      0,              0           };
+        const int PARAMETERSMAXVALUES[12] =         {64,            200,                100,            100,        100,                100,                10000,                  3600,               3600,               30,                     1,              5           };
+
+        const Parameters ORDEREDCOUPLES[3][2] = {{Configurator::TMIN, Configurator::TMAX}, {Configurator::DCMIN, Configurator::DCMAX}, {Configurator::CPMIN, Configurator::CPMAX}};
 
         bool existsConfigFileTest() const;
         void checkForExtraSettings(const std::set<std::string>&) const;
