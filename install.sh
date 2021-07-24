@@ -1,7 +1,7 @@
 #!/bin/sh
 echo "Run this script with sudo"
 
-cp fancontroller/bin/Release/fancontroller /usr/bin
+cp binary/fancontroller /usr/bin
 
 cp config/fancontroller.cfg /etc/
 
