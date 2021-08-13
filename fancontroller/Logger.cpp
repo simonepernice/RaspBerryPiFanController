@@ -24,7 +24,7 @@
 #include <stdio.h>
 #include <iomanip>
 
-Logger::Logger(const Configurator&  c) :
+Logger::Logger(const Configurator&  c):
     enabled(c.isLogEnabled()),
     logLevel(c.getLogLevel()),
     logLines(0)

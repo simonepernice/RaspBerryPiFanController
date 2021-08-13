@@ -28,7 +28,7 @@
 class Logger
 {
     public:
-        Logger(const Configurator&);
+        explicit Logger(const Configurator&);
         virtual ~Logger();
         void append(const std::string&, const int);
 

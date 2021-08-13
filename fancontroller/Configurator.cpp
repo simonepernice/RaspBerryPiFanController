@@ -33,7 +33,7 @@ void Configurator::checkForExtraSettings(const std::set<std::string>& keywords) 
     {
         for (const auto& subSet : setting)
         {
-            if (keywords.find(std::string(subSet.getName())) == keywords.end())
+            if (keywords.find(subSet.getName()) == keywords.end())
             {
                 throw std::runtime_error(std::string("\nThe following setting was not expected: ").append(subSet.getName()));
             }

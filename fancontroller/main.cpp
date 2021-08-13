@@ -26,34 +26,6 @@
 #include "Configurator.h"
 #include "FanController.h"
 
-
-void tempTest ()
-{
-    TempReader tr;
-    for (int i=0; i<10; ++i)
-    {
-        std::cout << "The temperatue is " << tr.readTemperatureMC() << "\n";
-        sleep(1);
-    }
-}
-
-void configTest ()
-{
-    Configurator cr;
-    std::cout << "The temperature minimum is " << cr.getTempMinMC() << "mC\n";
-    std::cout << "The temperature maximum is " << cr.getTempMaxMC() << "mC\n";
-    std::cout << "The min duty cycle is " << cr.getDutyCycleMin() << "%\n";
-    std::cout << "The max duty cycle is " << cr.getDutyCycleMax() << "%\n";
-    std::cout << "The PWM frequency is " << cr.getPWMFrequencyHz() << "Hz\n";
-    std::cout << "The max-power turn-on time is " << cr.getMaxPowTurnOnTimeMS() << "ms\n";
-    std::cout << "The pin number is " << cr.getPinNumber() << "\n";
-    std::cout << "The max check period time is " << cr.getCheckPeriodMaxS() << "ms\n";
-    std::cout << "The min check period time is " << cr.getCheckPeriodMinS() << "ms\n";
-    std::cout << "The max delta-temperature per check is " << cr.getCheckMaxDeltaTempMC() << "mC\n";
-    std::cout << "The log file is enabled " << cr.isLogEnabled() << "\n";
-    std::cout << "The log level is " << cr.getLogLevel() << "\n";
-}
-
 int main(int argc, char *argv[])
 {
     if (argc > 1)
