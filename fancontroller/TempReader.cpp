@@ -27,7 +27,6 @@ TempReader::TempReader():
 
 int TempReader::readTemperatureMC()
 {
-    tempfile.clear();
     tempfile.seekg(0);
 
     int t;
